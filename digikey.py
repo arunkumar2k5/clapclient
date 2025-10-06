@@ -80,16 +80,40 @@ def Web_inteface(lis1):
 
                     print("Search error:", response.text)
 
-        p_1 = [pd.DataFrame(d.items(), columns=["Attribute", "Value"]) for d in fin_11 ] 
+        # Create a comparison table with attributes as rows and components as columns
+        if not fin_11:
+            return pd.DataFrame()
         
-        templ=[" consider important parameter along with part status"]
-        res=pd.concat(p_1,ignore_index=True)
+        # Get all unique attributes across all components
+        all_attributes = []
+        for specs in fin_11:
+            all_attributes.extend(specs.keys())
+        all_attributes = list(dict.fromkeys(all_attributes))  # Remove duplicates while preserving order
+        
+        # Build the comparison dataframe
+        comparison_data = {"Attribute": all_attributes}
+        
+        # Track column names to handle duplicates
+        used_names = {}
+        for idx, specs in enumerate(fin_11):
+            part_name = specs.get("Part Number", f"Component {idx+1}")
+            
+            # Handle duplicate part numbers by adding a suffix
+            if part_name in used_names:
+                used_names[part_name] += 1
+                column_name = f"{part_name} ({used_names[part_name]})"
+            else:
+                used_names[part_name] = 1
+                column_name = part_name
+            
+            comparison_data[column_name] = [specs.get(attr, "-") for attr in all_attributes]
+        
+        res = pd.DataFrame(comparison_data)
         return res
     except Exception as e:
         print("Error:",e)
         return "ERRor :"+str(e)
 import gradio as gr
-
 iface = gr. Interface(
 fn=Web_inteface,
 inputs=gr.Textbox(label="Enter Part Numbers (comma separated)", lines=4, placeholder="e.g. ABC123, XYZ456"),
