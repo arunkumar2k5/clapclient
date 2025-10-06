@@ -122,8 +122,8 @@ def render_manual_tab() -> None:
     default_a = st.session_state.get("sensor_a", "MLX90393")
     default_b = st.session_state.get("sensor_b", "HMC5883L")
 
-    sensor_a = st.text_input("First sensor part number", value=default_a)
-    sensor_b = st.text_input("Second sensor part number", value=default_b)
+    sensor_a = st.text_input("Primary part number", value=default_a)
+    sensor_b = st.text_input("Alternative part number", value=default_b)
 
     result_placeholder = st.empty()
 
