@@ -1,104 +1,49 @@
 import requests
-import pandas as pd # type: ignore
 from requests.auth import HTTPBasicAuth
 import json
-import tempfile
 import os
 
-
-def Web_inteface(lis1):
-    try:
-        Li=[p.strip() for p in lis1.split(',') if p.strip()]
-        fin_11=[]
-        client_id = "0dhv3AZgnR9XJnjvVs8RMwI5c2aWbUNA"
-        client_secret = "bKXnVOBACsXedDa5"
-        auth_url = "https://api.digikey.com/v1/oauth2/token"
-        data = {
-            "grant_type": "client_credentials"
+def fetch_digikey_data(part_numbers: list, output_filename: str) -> str:
+    """
+    Fetch part data from Digikey API for multiple part numbers and save as a single JSON file.
+    Returns the filename or raises an Exception on failure.
+    """
+    client_id = "0dhv3AZgnR9XJnjvVs8RMwI5c2aWbUNA"
+    client_secret = "bKXnVOBACsXedDa5"
+    auth_url = "https://api.digikey.com/v1/oauth2/token"
+    data = {"grant_type": "client_credentials"}
+    token_response = requests.post(auth_url, data=data, auth=HTTPBasicAuth(client_id, client_secret))
+    if token_response.status_code != 200:
+        raise Exception(f"Token error: {token_response.text}")
+    access_token = token_response.json()["access_token"]
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "X-DIGIKEY-Client-Id": client_id,
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+    }
+    product_url = "https://api.digikey.com/products/v4/search/keyword"
+    all_specs = []
+    for part_number in part_numbers:
+        body = {"keywords": part_number, "recordCount": 1}
+        response = requests.post(product_url, headers=headers, json=body)
+        if response.status_code != 200:
+            all_specs.append({"Part Number": part_number.upper(), "Error": f"Search error: {response.text}"})
+            continue
+        result = response.json()
+        if not result.get('Products'):
+            all_specs.append({"Part Number": part_number.upper(), "Error": "No product found"})
+            continue
+        product = result['Products'][0]
+        specs = {
+            "Part Number": part_number.upper(),
+            "Mfr": product.get('Manufacturer', {}).get('Name'),
+            "Part Status": product.get('ProductStatus', {}).get('Status'),
         }
-        token_response = requests.post ( auth_url, data =data, auth=HTTPBasicAuth(client_id, client_secret ) )
-        if token_response.status_code == 200:
-            access_token= token_response.json()["access_token"]
-            print("Access token received.")
-        else:
-            print("Token error:", token_response.text)
-            access_token = None
-        part_list=Li
-        if access_token:
-            headers = {
-
-                    "Authorization": f"Bearer {access_token}",
-
-                    "X-DIGIKEY-Client-Id": client_id,
-
-                    "Content-Type": "application/json",
-
-                    "Accept": "application/json"
-            }
-
-            product_url = "https://api.digikey.com/products/v4/search/keyword" #part_number = "GCM1885C1H180JA16D"
-
-            miss=[]
-            for part in range(len(part_list)):
-                body = {
-
-                   "keywords": part_list[part],
-                    "recordCount": 1
-                }
-
-                response = requests.post(product_url, headers=headers, json=body)
-
-                specs={"Part Number": part_list[part].upper()}
-
-                if response.status_code == 200:
-
-                    result = response.json() 
-                    #print("Search result:", result)
-
-                    if result['Products']==[]:
-                        miss.append
-                    else:
-
-                        pr=result['Products'] [0] ["Parameters"]
-
-                        specs["Mfr"]=result['Products'] [0] ['Manufacturer'] ['Name']
-
-                        specs ["Part Status"]=result['Products'] [0] ['ProductStatus'] ['Status']
-
-                        for e in pr:
-
-                            specs [e['ParameterText']]=e["ValueText"]
-
-                        fin_11.append(specs)
-
-                else:
-
-                    print("Search error:", response.text)
-
-        p_1 = [pd.DataFrame(d.items(), columns=["Attribute", "Value"]) for d in fin_11 ] 
-        
-        res=pd.concat(p_1,ignore_index=True)
-        json_list=[df.to_dict(orient="records") for df in p_1]
-        temp_file= tempfile.NamedTemporaryFile(delete=False,suffix=".json")
-        with open (temp_file.name,"w") as f:
-            json.dump(json_list, f , indent =4)
-
-        return temp_file.name
-    except Exception as e:
-        print("Error:",e)
-        return "ERRor :"+str(e)
-#print(Web_inteface('ERJ-6ENF33R2, ERJ6ENF33R2V'))
-import gradio as gr
-
-iface = gr. Interface(
-fn=Web_inteface,
-inputs=gr.Textbox(label="Enter Part Numbers (comma separated)", lines=4, placeholder="e.g. ABC123, XYZ456"),
-#outputs=gr.File(label="Download Excel Comparison"),
-
-outputs=gr.File(label="Download JSON Fils"),
-title="Electronic Parts Comparison Tool",
-description="Enter a list of part numbers to get their alternate comparison in Excel format."
-
-)
-
-iface.launch (share=True)
+        for param in product.get('Parameters', []):
+            specs[param.get('ParameterText')] = param.get('ValueText')
+        all_specs.append(specs)
+    filename = f"{output_filename}.json"
+    with open(filename, "w") as f:
+        json.dump(all_specs, f, indent=4)
+    return filename
