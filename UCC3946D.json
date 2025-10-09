@@ -1,0 +1,50 @@
+[
+    {
+        "Part Number": "UCC3946D",
+        "Mfr": "Texas Instruments",
+        "Part Status": "Active",
+        "DigiKey Programmable": "Not Verified",
+        "Type": "Simple Reset/Power-On Reset",
+        "Number of Voltages Monitored": "1",
+        "Voltage - Threshold": "Adjustable/Selectable",
+        "Output": "Push-Pull, Totem Pole",
+        "Reset": "Active Low",
+        "Reset Timeout": "160ms Minimum",
+        "Operating Temperature": "0\u00b0C ~ 70\u00b0C (TA)",
+        "Mounting Type": "Surface Mount",
+        "Package / Case": "8-SOIC (0.154\", 3.90mm Width)",
+        "Supplier Device Package": "8-SOIC"
+    },
+    {
+        "Part Number": "UCC2946DTR",
+        "Mfr": "Texas Instruments",
+        "Part Status": "Active",
+        "DigiKey Programmable": "Not Verified",
+        "Type": "Simple Reset/Power-On Reset",
+        "Number of Voltages Monitored": "1",
+        "Voltage - Threshold": "Adjustable/Selectable",
+        "Output": "Push-Pull, Totem Pole",
+        "Reset": "Active Low",
+        "Reset Timeout": "140ms Minimum",
+        "Operating Temperature": "-40\u00b0C ~ 85\u00b0C (TA)",
+        "Mounting Type": "Surface Mount",
+        "Package / Case": "8-SOIC (0.154\", 3.90mm Width)",
+        "Supplier Device Package": "8-SOIC"
+    },
+    {
+        "Part Number": "UCC3946DTR",
+        "Mfr": "Texas Instruments",
+        "Part Status": "Active",
+        "DigiKey Programmable": "Not Verified",
+        "Type": "Simple Reset/Power-On Reset",
+        "Number of Voltages Monitored": "1",
+        "Voltage - Threshold": "Adjustable/Selectable",
+        "Output": "Push-Pull, Totem Pole",
+        "Reset": "Active Low",
+        "Reset Timeout": "160ms Minimum",
+        "Operating Temperature": "0\u00b0C ~ 70\u00b0C (TA)",
+        "Mounting Type": "Surface Mount",
+        "Package / Case": "8-SOIC (0.154\", 3.90mm Width)",
+        "Supplier Device Package": "8-SOIC"
+    }
+]
